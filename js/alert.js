@@ -7,7 +7,6 @@
         this.set = function(k,v){
             config[k] = v;
         };
-        this.init();
     }
     Alert.prototype = {
         init:function(){
@@ -44,28 +43,100 @@
             box.appendChild(head);
             box.appendChild(content);
             box.appendChild(btnBox);
+            var cover = document.createElement("div");
+            cover.style.position = "fixed";
+            cover.style.top = 0;
+            cover.style.bottom = 0;
+            cover.style.left = 0;
+            cover.style.right = 0;
+            cover.style.zIndex = "9999";
+            cover.style.background = "rgba(0,0,0,0)";
+            cover.appendChild(box);
+            cover.setAttribute("id",'my_alert');
+            this.set("cover",cover);
             this.set('box',box);
             this.set('btn',btn);
         },
         show:function(str){
             this.get('content').innerHTML = str;
-            document.body.appendChild(this.get('box'));
-            document.body.style.position = "fixed";
-            document.body.style.width = "90%";
+            document.body.appendChild(this.get('cover'));
+            document.body.style.position = 'fixed';
+            document.body.style.right = '17px';
+            document.body.style.left = '0';
+            this.createOverflow();
+            document.body.appendChild(this.get("overflowBox"));
         },
         hide:function(){
-            document.body.removeChild(this.get('box'));
+            document.body.removeChild(this.get('cover'));
+            document.body.style.position = 'relative';
+            document.body.style.right = '17px';
+            document.body.style.left = '0';
+            document.body.removeChild(this.get('overflowBox'));
         },
         alert:function(str){
+            this.init();
             this.show(str);
         },
         bindEvent:function(){
             var that = this;
             this.get('btn').onclick = function(){
                 that.hide();
-            }
+            };
+
+
+            this.get("box").onclick = function(event){
+                console.log(1);
+                if(event.stopPropagation){
+                    event.stopPropagation();
+                }
+                else{
+                    window.event.cancelBubble = true;
+                }
+            };
+
+            document.body.onclick = function(){
+                var flag = true;
+                var index = 0;
+                var timer;
+                if(document.getElementById("my_alert")){
+                    timer = setInterval(function(){
+                        if(!flag){
+                            that.get("box" ).style.borderColor = "#fff";
+                            index++;
+                            flag = !flag;
+                        }
+                        else{
+                            that.get("box" ).style.borderColor = "#ccc";
+                            index++;
+                            flag = !flag;
+                        }
+                        if(index>10){
+                            clearInterval(timer);
+
+                        }
+                    },100);
+                }
+            };
+
+        },
+        createOverflow:function(){
+            var h = document.body.scrollHeight;
+            var h2 = document.body.clientHeight;
+
+            var box = document.createElement("div");
+            var content = document.createElement("div");
+            box.style.position = 'absolute';
+            box.style.height = h+17 + 'px';
+            box.style.right = '-17px';
+            box.style.top = 0;
+            box.style.width = '17px';
+            content.style.height = h2 + "px";
+            box.style.overflowY = 'scroll';
+            box.appendChild(content);
+            this.set('overflowBox',box);
         }
     };
+
     var o = new Alert();
     window.alert = function(str){
         return o.alert.call(o,str);
