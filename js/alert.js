@@ -146,7 +146,8 @@
     };
 
     var o = new Alert();
-    if(document.documentMode>7){
+    console.log(document.documentMode);
+    if(!document.documentMode||document.documentMode>7){
         window.alert = function(str){
             return o.alert.call(o,str);
         }
